@@ -1,0 +1,201 @@
+{% extends "streamApp/base.html" %}
+
+{% block content %}
+    <style>
+        .GroupItem:hover{
+            background-color:#284678;
+            color:white;
+            
+        }
+
+
+    </style>
+    {% load static %}
+
+    {% if messages %}
+        {% for message in messages %}
+        <br/>
+        <div>
+            <center>
+                <div style="padding:1rem; background-color:azure; border:solid 2px #284678; border-radius:15px; width:auto">
+                <p style="color:#fa1414">
+                    <b> {{ message }}.</b>
+                </p>
+                </div>
+            </center>
+        </div>
+
+        {% endfor %}
+    {% endif %}
+    
+
+    <div class="container">
+        <div style="padding:1rem;display:flex;justify-content:space-between">
+
+            <div style="display:flex, justify-content:center">
+                <h2><b>{{module.ModuleName}} Groups</b></h2>
+            </div>
+            {% if Program.Status == "Available" %}
+                <div>
+                    <a href="{% url 'done_Group_Adding' ModuleId=module.ModuleId %}" style="border-radius:100px;border:solid 1px; color:#284678;padding:1rem">
+                        <b>Done</b>
+                    </a>
+                </div>
+            {% endif %}
+
+        </div>
+
+        <p class="text-info" style="font-size:25px">
+            <b>Please select groups that will take on the module</b>
+        </p> 
+        <br/>
+
+        <form method="post">
+            {% csrf_token %}
+            <div id="AllGroups">
+
+
+                
+            </div>
+            <input type="submit" hidden id="submit"/>
+        </form>
+        <input type="hidden" id="numSelect" value="0" />
+        {% if groups %}
+    
+            <div class="row">
+                
+                    {% for group in groups %}
+                
+                        <div class="col-xl-3 col-md-6 mb-4" >
+                            
+                            <div id="GroupItem{{group.GroupId}}" class="card border-left-primary shadow h-100 py-2 GroupItem" >
+                                <div style="display:flex; justify-content:right ">
+                                    
+                                </div>
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center" style="display:flex;justify-content:center">
+                                        {% comment %}  src="http://127.0.0.1:8000/media/TheFiles/files/Screenshot_2023-03-06_215627.png"{% endcomment %}
+                                       <h1>{{group.GroupCode}}</h1>
+                                    </div>
+                                    <hr/>
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2" style="display:flex; justify-content:center;">
+                                            
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                {{module.ModuleCode}}
+                                            </div>
+                                        </div>
+                                    
+                                    </div>
+                                    <div class="row no-gutters align-items-center" style="padding:1rem;display:flex; justify-content:center;align-content:center;">
+                                        
+                                       
+                                                    
+                                            <div>
+                                                {% comment %} <a class="btn btn-success" href="{% url 'Approve' orderId=order.OrderId %}" title="Remove item from cart?" style="padding:5px;" >Approve order</a> {% endcomment %}
+                                            </div>
+    
+                                        
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="Nfor{{group.GroupId}}" value="0"/>
+                        <input type="hidden" id="Code{{group.GroupId}}" value="{{group.GroupCode}}"/>
+                        
+                        <script>
+
+                            Add_Lecture = document.getElementById("Add_Lecture"+{{group.GroupId}})
+                            GroupItem = document.getElementById("GroupItem"+{{group.GroupId}})
+                            console.log(document.getElementById("Nfor"+{{group.GroupId}}))
+                            AllGroups = document.getElementById("AllGroups")
+                            code = document.getElementById("Code"+{{group.GroupId}}).value
+                            AllGroups.innerHTML += '<div id="GroupHolder'+{{group.GroupId}}+'" > <input type="hidden" name="'+code+'" id="'+code+'" value=""/> </div>'
+
+                            GroupItem.addEventListener('click', function(){
+                                console.log(selectItem({{group.GroupId}}))
+                            })
+                            function selectItem(GroupId){
+                                
+                                if(document.getElementById("Nfor"+GroupId).value == '0'){
+                                    document.getElementById("GroupItem"+GroupId).style = "background-color:#284678;color:white;"
+                                    document.getElementById("Nfor"+GroupId).value ='1'
+      
+                                    code = document.getElementById("Code"+GroupId).value
+                                    document.getElementById(code).value = code
+                                    numGroups = Number(document.getElementById("numSelect").value)
+                                    document.getElementById("numSelect").value = numGroups + 1
+                                }
+                                else{
+                                    document.getElementById("GroupItem"+GroupId).style = ""
+                                    Gholder = document.getElementById("GroupHolder"+GroupId)
+                                    
+                                 
+
+                           
+                                    document.getElementById("Nfor"+GroupId).value ='0'
+                                    code = document.getElementById("Code"+GroupId).value
+                                    document.getElementById(code).value = ''
+                                    numGroups = Number(document.getElementById("numSelect").value)
+                                    document.getElementById("numSelect").value = numGroups - 1
+                                }
+                   
+                                return document.getElementById("Nfor"+{{group.GroupId}}).value
+
+                            }
+
+                        </script>
+                    {% endfor%}
+                
+    
+    
+    
+    
+    
+    
+            
+    
+    
+            </div>
+        {%endif%}
+        <div>
+            <div id="messages" style="font-size:25px; padding:2rem"  hidden class="text-danger">
+                Please select at least one group to take on the project
+            </div>
+
+            <br/>
+
+            <button id="btnSubmit" class="btn btn-success" style="background-color:#284678; padding:1rem; width:100%">
+                <b>Submit groups</b>
+            </button>
+        </div>
+ 
+
+
+    <div>
+
+
+    <script>
+        numGroups = Number(document.getElementById("numSelect").value)
+        submit = document.getElementById("submit")
+        messages = document.getElementById("messages")
+
+        btnSubmit =  document.getElementById("btnSubmit")
+
+        btnSubmit.addEventListener('click', function(){
+            if(Number(numGroups) <= 0){
+                messages.hidden = false
+                console.log(messages.hidden)
+                return;
+            }
+            else{
+                submit.click()
+            }
+        })
+
+
+
+    </script>
+        
+{% endblock %}
